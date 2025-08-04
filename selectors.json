@@ -1,0 +1,18 @@
+{
+  "yeni_ilan_link": "#sellSmilarItem",
+  "ilan_baslik_input": "input[name='addClassifiedTitle']",
+  "aciklama_input": "div[name='Açıklama']",
+  "fiyat_input": "#addClassifiedPrice",
+  "foto_yukleme_input": "input[type='file']",
+  "kurallar_checkbox": "#postRulesCheck",
+  "oto_yayin_checkbox": "#autoPublishAuction",
+  "devam_et_button": "#postAdBtn",
+  "foto_galeri": "img.stdImg, img.thmbImg",
+  "urun_dropdown": "select[an-form-object-name='Ürün']",
+  "arac_markasi_dropdown": "select[an-form-object-name='Araç Markası']",
+  "arac_serisi_dropdown": "select[an-form-object-name='Araç Serisi']",
+  "urun_markasi_dropdown": "select[an-form-object-name='Ürün Markası']",
+  "cikma_parca_dropdown": "select[an-form-object-name='Çıkma Yedek Parça']",
+  "durumu_dropdown": "select[name='condition']",
+  "takas_dropdown": "select[name='exchange']"
+}

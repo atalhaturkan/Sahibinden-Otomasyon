@@ -77,21 +77,25 @@ try:
 
 
     # Form Doldurma Fonksiyonları
-    def set_value_with_js(selector, value):
+    def fill_input_and_trigger_events(selector, value):
         element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, selector)))
         driver.execute_script("arguments[0].value = arguments[1];", element, value)
+        driver.execute_script("arguments[0].dispatchEvent(new Event('input', { bubbles: true }));", element)
+        driver.execute_script("arguments[0].dispatchEvent(new Event('change', { bubbles: true }));", element)
 
 
-    def set_innerhtml_with_js(selector, html_value):
+    def fill_richtext_and_trigger_events(selector, html_value):
         element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, selector)))
         driver.execute_script("arguments[0].innerHTML = arguments[1];", element, html_value)
+        driver.execute_script("arguments[0].dispatchEvent(new Event('input', { bubbles: true }));", element)
+        driver.execute_script("arguments[0].dispatchEvent(new Event('change', { bubbles: true }));", element)
 
 
-    set_value_with_js(selectors['ilan_baslik_input'], ilan_bilgileri.get("ilan_basligi", ""))
-    set_innerhtml_with_js(selectors['aciklama_input'], ilan_bilgileri.get('ilan_aciklamasi_html', ''))
+    fill_input_and_trigger_events(selectors['ilan_baslik_input'], ilan_bilgileri.get("ilan_basligi", ""))
+    fill_richtext_and_trigger_events(selectors['aciklama_input'], ilan_bilgileri.get('ilan_aciklamasi_html', ''))
     fiyat = ilan_bilgileri.get('ilan_fiyat', '0').replace('TL', '').replace('.', '').strip()
-    set_value_with_js(selectors['fiyat_input'], fiyat)
-    print("✅ Başlık, açıklama ve fiyat dolduruldu.")
+    fill_input_and_trigger_events(selectors['fiyat_input'], fiyat)
+    print("✅ Başlık, açıklama ve fiyat (olaylar tetiklenerek) dolduruldu.")
 
 
     # Açılır Menüleri Doldurma
@@ -132,7 +136,8 @@ try:
         print("✅ Fotoğraf yükleme komutu gönderildi.")
 
 
-    # Onay Kutuları
+    # --- İSTEDİĞİNİZ BÖLÜM BURADA ---
+    # Onay Kutularını İşaretleme
     def scroll_and_click(selector):
         try:
             element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, selector)))
@@ -144,8 +149,12 @@ try:
             return False
 
 
-    if scroll_and_click(selectors['kurallar_checkbox']): print("✅ Kurallar kabul edildi.")
-    if scroll_and_click(selectors['oto_yayin_checkbox']): print("✅ Otomatik yayınlama işaretlendi.")
+    if scroll_and_click(selectors['kurallar_checkbox']):
+        print("✅ 'İlan verme kurallarını okudum' kutusu işaretlendi.")
+
+    if scroll_and_click(selectors['oto_yayin_checkbox']):
+        print("✅ 'Otomatik olarak yeniden yayına alınsın' kutusu işaretlendi.")
+    # --- İŞARETLEME BÖLÜMÜ SONU ---
 
     print("\n🎉 Form doldurma işlemi tamamlandı! Son kontrol için sayfa size bırakıldı.")
 

@@ -65,6 +65,15 @@ try:
                 print(f"⚠️ Fotoğraf indirilirken hata: {e}")
     print(f"✅ {len(downloaded_photo_paths)} adet yüksek kaliteli fotoğraf 'temp_images' klasörüne indirildi.")
 
+    # FOTOĞRAF KONTROLÜ
+    if len(downloaded_photo_paths) < len(unique_urls):
+        error_message = (f"❌ HATA: Fotoğraf indirme işlemi tamamlanamadı! "
+                         f"Bulunan {len(unique_urls)} fotoğraftan sadece {len(downloaded_photo_paths)} tanesi indirilebildi. "
+                         f"Script durduruluyor.")
+        raise Exception(error_message)
+    else:
+        print("✅ Tüm fotoğrafların başarıyla indirildiği doğrulandı.")
+
     # BÖLÜM 2: YENİ İLAN OLUŞTURMA VE DOLDURMA
     print("\n🚀 Kısayol kullanılarak yeni ilan verme sürecine başlanıyor...")
     original_window = driver.current_window_handle
@@ -136,27 +145,45 @@ try:
         print("✅ Fotoğraf yükleme komutu gönderildi.")
 
 
-    # --- İSTEDİĞİNİZ BÖLÜM BURADA ---
-    # Onay Kutularını İşaretleme
-    def scroll_and_click(selector):
+    # Onay Kutuları ve İlanı Tamamlama
+    def scroll_and_click(selector, label):
         try:
             element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, selector)))
             driver.execute_script("arguments[0].scrollIntoView({block: 'center', inline: 'center'});", element)
             time.sleep(1)
             wait.until(EC.element_to_be_clickable(element)).click()
+            print(f"✅ '{label}' kutusu/butonu tıklandı.")
             return True
-        except:
+        except TimeoutException:
+            print(f"⚠️ HATA: '{label}' ('{selector}') bulunamadı veya tıklanabilir değil.")
+            return False
+        except Exception as e:
+            print(f"⚠️ HATA: '{label}' tıklanırken hata: {e}")
             return False
 
 
-    if scroll_and_click(selectors['kurallar_checkbox']):
-        print("✅ 'İlan verme kurallarını okudum' kutusu işaretlendi.")
+    if scroll_and_click(selectors['kurallar_checkbox'], "İlan Verme Kuralları"): pass
+    if scroll_and_click(selectors['oto_yayin_checkbox'], "Otomatik Yeniden Yayınlama"): pass
 
-    if scroll_and_click(selectors['oto_yayin_checkbox']):
-        print("✅ 'Otomatik olarak yeniden yayına alınsın' kutusu işaretlendi.")
-    # --- İŞARETLEME BÖLÜMÜ SONU ---
+    print("\n🎉 Form doldurma işlemi tamamlandı! Sonraki adımlara geçiliyor...")
 
-    print("\n🎉 Form doldurma işlemi tamamlandı! Son kontrol için sayfa size bırakıldı.")
+    if scroll_and_click(selectors['devam_et_1'], "Devam Et (Sayfa 1)"):
+        print("✅ Önizleme sayfası yükleniyor...")
+        time.sleep(2)
+
+        if scroll_and_click(selectors['devam_et_2'], "Devam Et (Önizleme)"):
+            print("✅ Doping sayfası yükleniyor...")
+            time.sleep(2)
+
+            if scroll_and_click(selectors['devam_et_3'], "Devam Et (Doping)"):
+                print("✅ İlan yayınlandı! Tebrikler sayfası için 10 saniye bekleniyor...")
+                time.sleep(10)
+            else:
+                print("❌ İlan tamamlama başarısız (Doping sayfası). Lütfen tarayıcıyı manuel kontrol edin.")
+        else:
+            print("❌ İlan tamamlama başarısız (Önizleme sayfası). Lütfen tarayıcıyı manuel kontrol edin.")
+    else:
+        print("❌ İlk 'Devam Et' butonuna tıklanamadı. İşlem durdu.")
 
 except FileNotFoundError:
     print("❌ HATA: 'selectors.json' dosyası bulunamadı. Lütfen 'main.py' ile aynı dizinde olduğundan emin olun.")

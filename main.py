@@ -44,31 +44,38 @@ try:
     ilan_bilgileri['ilan_aciklamasi_html'] = aciklama_elementi.get_attribute('innerHTML')
     print("✅ İlan bilgileri başarıyla toplandı.")
 
-    # FOTOĞRAF İNDİRME
-    print("\n🖼️ Yüksek kaliteli fotoğraflar indiriliyor...")
-    image_elements = driver.find_elements(By.CSS_SELECTOR, selectors['foto_galeri'])
-    downloaded_photo_paths = []
+    # FOTOĞRAF İNDİRME (GÜNCELLENMİŞ TIKLAMA YÖNTEMİYLE)
+    print("\n🖼️ Yüksek kaliteli fotoğraflar tek tek bulunup indiriliyor...")
+    thumbnail_elements = driver.find_elements(By.CSS_SELECTOR, selectors['foto_galeri_thumbnail'])
     unique_urls = set()
-    for img_element in image_elements:
-        image_url = img_element.get_attribute('src')
-        if image_url and image_url not in unique_urls:
-            unique_urls.add(image_url)
-            high_quality_url = image_url.replace("thmb_", "x16_").replace("x5_", "x16_")
-            try:
+    downloaded_photo_paths = []
+    print(f"🔎 Bulunan küçük resim sayısı: {len(thumbnail_elements)}")
+    for i, thumb in enumerate(thumbnail_elements):
+        try:
+            # Standart click yerine JavaScript click kullanarak engelleri aşıyoruz.
+            driver.execute_script("arguments[0].click();", thumb)
+
+            time.sleep(0.5)
+            main_image_element = wait.until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, selectors['ana_foto_goruntuleyici'])))
+            high_quality_url = main_image_element.get_attribute('src')
+
+            if high_quality_url and high_quality_url not in unique_urls:
+                unique_urls.add(high_quality_url)
                 response = requests.get(high_quality_url)
                 if 'image' in response.headers.get('Content-Type', ''):
                     file_name = high_quality_url.split('/')[-1]
                     file_path = os.path.join(TEMP_IMAGE_DIR, file_name)
                     with open(file_path, 'wb') as file: file.write(response.content)
                     downloaded_photo_paths.append(os.path.abspath(file_path))
-            except Exception as e:
-                print(f"⚠️ Fotoğraf indirilirken hata: {e}")
-    print(f"✅ {len(downloaded_photo_paths)} adet yüksek kaliteli fotoğraf 'temp_images' klasörüne indirildi.")
+        except Exception as e:
+            print(f"⚠️ {i + 1}. küçük resim işlenirken bir hata oluştu: {e}")
+    print(f"✅ {len(downloaded_photo_paths)} adet yüksek kaliteli fotoğraf indirildi.")
 
     # FOTOĞRAF KONTROLÜ
-    if len(downloaded_photo_paths) < len(unique_urls):
+    if len(downloaded_photo_paths) < len(thumbnail_elements):
         error_message = (f"❌ HATA: Fotoğraf indirme işlemi tamamlanamadı! "
-                         f"Bulunan {len(unique_urls)} fotoğraftan sadece {len(downloaded_photo_paths)} tanesi indirilebildi. "
+                         f"Bulunan {len(thumbnail_elements)} fotoğraftan sadece {len(downloaded_photo_paths)} tanesi indirilebildi. "
                          f"Script durduruluyor.")
         raise Exception(error_message)
     else:
